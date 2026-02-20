@@ -35,6 +35,11 @@ public class ProductDAOImpl implements IProductDAO {
     }
 
     @Override
+    public List<Product> findProductsByCategory(Long id) {
+        return productRepository.findProductsByCategory(id);
+    }
+
+    @Override
     public Product save(Product product) {
         return productRepository.save(product);
     }

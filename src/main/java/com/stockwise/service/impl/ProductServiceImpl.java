@@ -85,6 +85,14 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    public List<ProductDTO> findProductsByCategory(Long id) {
+        if (categoryDAO.findById(id).isEmpty()){
+            throw new RuntimeException("No se encontro la categoria");
+        }
+        return productDAO.findProductsByCategory(id).stream().map(Mapper::toDTO).toList();
+    }
+
+    @Override
     public void deleteById(Long id) {
         if (productDAO.findById(id).isEmpty()){
             throw new RuntimeException("No se encontro el producto a borrar");

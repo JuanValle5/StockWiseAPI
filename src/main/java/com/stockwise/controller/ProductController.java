@@ -36,9 +36,14 @@ public class ProductController {
         return ResponseEntity.ok(productService.findAll());
     }
 
-    @GetMapping("findByLowStock")
+    @GetMapping("/findByLowStock")
     public ResponseEntity<?> finByLowStock(){
         return ResponseEntity.ok(productService.findProductsByLowStock());
+    }
+
+    @GetMapping("/findByCategory/{id}")
+    public ResponseEntity<?> findByCategory(@PathVariable Long id){
+        return ResponseEntity.ok(productService.findProductsByCategory(id));
     }
 
     @PostMapping("/create")

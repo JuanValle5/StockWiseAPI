@@ -13,4 +13,7 @@ public interface ProductRepository extends CrudRepository<Product,Long> {
     @Query("SELECT p from Product p WHERE p.currentStock <= p.minimunStock")
     List<Product> findProductsByLowStock();
 
+    @Query("SELECT p from Product p WHERE p.category.id == ?1")
+    List<Product> findProductsByCategory(Long id);
+
 }

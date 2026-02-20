@@ -9,6 +9,7 @@ public interface IProductDAO{
     List<Product> findAll();
     Optional<Product> findById(Long id);
     List<Product> findProductsByLowStock();
+    List<Product> findProductsByCategory(Long id);
     Product save(Product product);
     void deleteById(Long id);
 }

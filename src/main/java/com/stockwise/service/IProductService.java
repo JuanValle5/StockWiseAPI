@@ -12,5 +12,6 @@ public interface IProductService {
     ProductDTO save(ProductDTO productDTO);
     ProductDTO updateProduct(Long id, ProductDTO productDTO);
     List<ProductDTO> findProductsByLowStock();
+    List<ProductDTO> findProductsByCategory(Long id);
     void deleteById(Long id);
 }
