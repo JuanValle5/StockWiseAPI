@@ -10,7 +10,8 @@ import com.stockwise.model.StockMovementType;
 import com.stockwise.persistence.IProductDAO;
 import com.stockwise.persistence.IStockMovementDAO;
 import com.stockwise.service.IStockMovementService;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -66,7 +67,7 @@ public class StockMovementServiceImpl implements IStockMovementService {
                 .quantity(stockMovementDTO.getQuantity())
                 .type(stockMovementDTO.getType())
                 .reason(stockMovementDTO.getReason())
-                .createdAt(LocalDate.now())
+                .createdAt(stockMovementDTO.getCreatedAt())
                 .product(product)
                 .build();
 
