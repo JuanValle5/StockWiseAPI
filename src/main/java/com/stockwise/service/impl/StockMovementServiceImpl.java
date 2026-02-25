@@ -10,6 +10,7 @@ import com.stockwise.persistence.IStockMovementDAO;
 import com.stockwise.service.IStockMovementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,23 +43,30 @@ public class StockMovementServiceImpl implements IStockMovementService {
     }
 
     @Override
+    @Transactional
     public StockMovementDTO save(StockMovementDTO stockMovementDTO) {
-        Product productOptional = productDAO.findById(stockMovementDTO.getProductId()).orElse(null);
-        boolean type = false;
-        if (productOptional == null) throw new RuntimeException("Producto asociado no encontrado");
-        if (stockMovementDTO.getType() == StockMovementType.OUT &&
-                productOptional.getCurrentStock() < stockMovementDTO.getQuantity()){
-            throw new RuntimeException("Stock insuficiente. Disponible: " + productOptional.getCurrentStock());
-        }
-        if(stockMovementDTO.getType() == StockMovementType.IN){
-            type = true;
+        if (stockMovementDTO == null) throw new RuntimeException("El movimiento de stock es obligatorio");
+        if (stockMovementDTO.getProductId() == null) throw new RuntimeException("El producto asociado es obligatorio");
+        if (stockMovementDTO.getType() == null) throw new RuntimeException("El tipo de movimiento es obligatorio");
+        if (stockMovementDTO.getQuantity() == null || stockMovementDTO.getQuantity() <= 0) {
+            throw new RuntimeException("La cantidad debe ser mayor que cero");
         }
 
-        //Pendiente la implementacion a mejorar de este codigo
-        productOptional.setCurrentStock(
-                type ?
-                        productOptional.getCurrentStock() + stockMovementDTO.getQuantity():
-                        productOptional.getCurrentStock() - stockMovementDTO.getQuantity());
+        Product product = productDAO.findById(stockMovementDTO.getProductId())
+                .orElseThrow(() -> new RuntimeException("Producto asociado no encontrado"));
+
+        long currentStock = product.getCurrentStock() == null ? 0L : product.getCurrentStock();
+
+        if (stockMovementDTO.getType() == StockMovementType.OUT && currentStock < stockMovementDTO.getQuantity()) {
+            throw new RuntimeException("Stock insuficiente. Disponible: " + currentStock);
+        }
+
+        long updatedStock = stockMovementDTO.getType() == StockMovementType.IN
+                ? currentStock + stockMovementDTO.getQuantity()
+                : currentStock - stockMovementDTO.getQuantity();
+
+        product.setCurrentStock(updatedStock);
+        productDAO.save(product);
 
 
         var stockMovement = StockMovement.builder()
@@ -66,7 +74,7 @@ public class StockMovementServiceImpl implements IStockMovementService {
                 .type(stockMovementDTO.getType())
                 .reason(stockMovementDTO.getReason())
                 .createdAt(stockMovementDTO.getCreatedAt())
-                .product(productOptional)
+                .product(product)
                 .build();
 
 
