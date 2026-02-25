@@ -9,41 +9,57 @@ import com.stockwise.model.StockMovement;
 
 public class Mapper {
 
-    //Mapeo de category a categoryDTO
-    public static CategoryDTO toDTO(Category c){
-        if(c == null) return null;
+    private Mapper() {
+    }
+
+    public static CategoryDTO toDTO(Category category) {
+        if (category == null) {
+            return null;
+        }
         return CategoryDTO.builder()
-                .id(c.getId())
-                .name(c.getName())
-                .description(c.getDescription())
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
                 .build();
     }
-    //Mapeo de product a productDTO
-    public static ProductDTO toDTO(Product p){
-        if(p == null) return null;
+
+    public static ProductDTO toDTO(Product product) {
+        if (product == null) {
+            return null;
+        }
+
+        Long categoryId = product.getCategory() != null ? product.getCategory().getId() : null;
+        String categoryName = product.getCategory() != null ? product.getCategory().getName() : null;
+
         return ProductDTO.builder()
-                .id(p.getId())
-                .name(p.getName())
-                .description(p.getDescription())
-                .price(p.getPrice())
-                .currentStock(p.getCurrentStock())
-                .minimunStock(p.getMinimunStock())
-                .createdAt(p.getCreatedAt())
-                .categoryId(p.getCategory().getId())
-                .categoryName(p.getCategory().getName())
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .currentStock(product.getCurrentStock())
+                .minimunStock(product.getMinimunStock())
+                .createdAt(product.getCreatedAt())
+                .categoryId(categoryId)
+                .categoryName(categoryName)
                 .build();
     }
-    //Mapeo de sotckmovement a sotckmovementDTO
-    public static StockMovementDTO toDTO(StockMovement s){
-        if(s == null) return null;
+
+    public static StockMovementDTO toDTO(StockMovement stockMovement) {
+        if (stockMovement == null) {
+            return null;
+        }
+
+        Long productId = stockMovement.getProduct() != null ? stockMovement.getProduct().getId() : null;
+        String productName = stockMovement.getProduct() != null ? stockMovement.getProduct().getName() : null;
+
         return StockMovementDTO.builder()
-                .id(s.getId())
-                .quantity(s.getQuantity())
-                .type(s.getType())
-                .reason(s.getReason())
-                .createdAt(s.getCreatedAt())
-                .productId(s.getProduct().getId())
-                .productName(s.getProduct().getName())
+                .id(stockMovement.getId())
+                .quantity(stockMovement.getQuantity())
+                .type(stockMovement.getType())
+                .reason(stockMovement.getReason())
+                .createdAt(stockMovement.getCreatedAt())
+                .productId(productId)
+                .productName(productName)
                 .build();
     }
 }

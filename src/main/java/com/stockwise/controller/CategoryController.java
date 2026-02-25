@@ -1,39 +1,44 @@
 package com.stockwise.controller;
 
-
 import com.stockwise.dto.CategoryDTO;
 import com.stockwise.service.ICategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping("/api/categories")
+@Tag(name = "Categorías", description = "Operaciones para gestionar categorías")
 public class CategoryController {
 
     private final ICategoryService categoryService;
 
-    @Autowired
     public CategoryController(ICategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/findAll")
-    public ResponseEntity<?> findAll(){
+    @Operation(summary = "Listar categorías")
+    @GetMapping
+    public ResponseEntity<List<CategoryDTO>> findAll() {
         return ResponseEntity.ok(categoryService.findAll());
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createdCategory(@RequestBody CategoryDTO categoryDTO){
+    @Operation(summary = "Crear categoría")
+    @PostMapping
+    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
+        CategoryDTO created = categoryService.save(categoryDTO);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
 
-        CategoryDTO categoryDTO1 = categoryService.save(categoryDTO);
-        return ResponseEntity
-                .created(URI.create("/api/category/create/" + categoryDTO1.getId()))
-                .body(categoryDTO1);
+        return ResponseEntity.created(location).body(created);
     }
-
-
-
 }

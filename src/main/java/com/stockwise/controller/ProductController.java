@@ -2,68 +2,75 @@ package com.stockwise.controller;
 
 import com.stockwise.dto.ProductDTO;
 import com.stockwise.service.IProductService;
-import jakarta.servlet.ServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Optional;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/product")
+@RequestMapping("/api/products")
+@Tag(name = "Productos", description = "Operaciones para gestionar el catálogo de productos")
 public class ProductController {
 
     private final IProductService productService;
 
-    @Autowired
     public ProductController(IProductService productService) {
         this.productService = productService;
     }
 
-
-    @GetMapping("/find/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        Optional<ProductDTO> optionalProductDTO = productService.findById(id);
-        if (optionalProductDTO.isPresent()) {
-            return ResponseEntity.ok(optionalProductDTO);
-        }
-        return ResponseEntity.noContent().build();
+    @Operation(summary = "Buscar producto por ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDTO> findById(@PathVariable Long id) {
+        return productService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/findAll")
-    public ResponseEntity<?> findAll(){
+    @Operation(summary = "Listar todos los productos")
+    @GetMapping
+    public ResponseEntity<List<ProductDTO>> findAll() {
         return ResponseEntity.ok(productService.findAll());
     }
 
-    @GetMapping("/findByLowStock")
-    public ResponseEntity<?> finByLowStock(){
+    @Operation(summary = "Listar productos con stock bajo")
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<ProductDTO>> findByLowStock() {
         return ResponseEntity.ok(productService.findProductsByLowStock());
     }
 
-    @GetMapping("/findByCategory/{id}")
-    public ResponseEntity<?> findByCategory(@PathVariable Long id){
+    @Operation(summary = "Listar productos por categoría")
+    @GetMapping("/category/{id}")
+    public ResponseEntity<List<ProductDTO>> findByCategory(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findProductsByCategory(id));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createdProduct(@RequestBody ProductDTO productDTO){
+    @Operation(summary = "Crear producto")
+    @PostMapping
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
+        ProductDTO created = productService.save(productDTO);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
 
-        ProductDTO productDTO1 = productService.save(productDTO);
-
-        return ResponseEntity
-                .created(URI.create("/api/product/create" + productDTO1.getId()))
-                .body(productDTO1);
-
+        return ResponseEntity.created(location).body(created);
     }
 
-    @PostMapping("/update/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO){
-        return ResponseEntity.ok(productService.updateProduct(id,productDTO));
+    @Operation(summary = "Actualizar producto")
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO productDTO) {
+        return ResponseEntity.ok(productService.updateProduct(id, productDTO));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> updateProduct(@PathVariable Long id){
+    @Operation(summary = "Eliminar producto")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
